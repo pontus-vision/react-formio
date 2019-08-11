@@ -1,3 +1,4 @@
+
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import FormBuilder from './FormBuilder';
@@ -12,12 +13,12 @@ export default class FormEdit extends Component {
     builder: PropTypes.any,
     onSave: PropTypes.func
   }
-
+  
   constructor(props) {
     super(props);
-
+    
     const {form} = props;
-
+    
     this.state = {
       form: form
         ? _cloneDeep(form)
@@ -31,48 +32,60 @@ export default class FormEdit extends Component {
         },
     };
   }
-
+  
   static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.form && (prevState.form._id !== nextProps.form._id || prevState.form.modified !== nextProps.form.modified)) {
       return {
         form: _cloneDeep(nextProps.form),
       };
     }
-
+    
     return null;
   }
-
+  
   saveForm() {
     if (this.props.saveForm && typeof this.props.saveForm === 'function') {
       this.props.saveForm(this.state.form);
     }
   }
-
+  
   handleChange(path, event) {
+    
+    
     const {target} = event;
     const value = target.type === 'checkbox' ? target.checked : target.value;
-
+    
     this.setState((prev) => {
       const form = _cloneDeep(prev.form);
       _set(form, path, value);
-
+      
       // If setting title, autogenerate name and path as well.
       if (path === 'title' && !form._id) {
         form.name = _camelCase(value);
         form.path = _camelCase(value).toLowerCase();
       }
-
+      if (path === 'display'){
+        let formDisplay = value;
+        formDisplay = formDisplay.replace("string:","");
+        form.display = formDisplay;
+        
+      }
+      
       return {
         ...prev,
         form,
       };
+      
+      
     });
+    return true;
   }
-
+  
+  
   render() {
     const {form} = this.state;
     const {saveText} = this.props;
-
+    
     return (
       <div>
         <div className="row">
@@ -110,7 +123,8 @@ export default class FormEdit extends Component {
                   name="form-display"
                   id="form-display"
                   value={form.display || ''}
-                  onChange={event => this.handleChange('display', event)}
+                  onSelect={event => this.handleChange('display', event)}
+                  // onChange={event => this.handleChange('display', event)}
                 >
                   <option label="Form" value="form">Form</option>
                   <option label="Wizard" value="wizard">Wizard</option>
